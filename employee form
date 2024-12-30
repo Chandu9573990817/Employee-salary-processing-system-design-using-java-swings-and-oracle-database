@@ -1,0 +1,303 @@
+import javax.swing.*;
+
+import oracle.jdbc.driver.OracleDriver;
+
+import java.awt.*;
+import java.awt.event.*;
+import java.sql.*;
+public class EmployeeForm extends JFrame implements ActionListener
+{
+	JLabel l1,l2,l3,l4,l5,l6;
+	JTextField t1,t2,t3,t4;
+	JButton b1,b2,b3,b4,b5,b6;
+	public EmployeeForm()
+	{
+		setLayout(new GridLayout(8,2,10,10));
+		
+		l1=new JLabel("Enter employee number:");
+		l2=new JLabel("Enter employee name");
+		l3=new JLabel("Enter employee age:");
+		l4=new JLabel("Enter employee salary:");
+		l5=new JLabel("Welcome....");
+		
+		t1=new JTextField();
+		t2=new JTextField();
+		t3=new JTextField();
+		t4=new JTextField();
+		
+		b1=new JButton("New");
+		b2=new JButton("Save");
+		b3=new JButton("Search");
+		b4=new JButton("Update");
+		b5=new JButton("Delete");
+		b6=new JButton("Exit");
+		
+		add(l1);
+		add(t1);
+		add(l2);
+		add(t2);
+		add(l3);
+		add(t3);
+		add(l4);
+		add(t4);
+		add(b1);
+		add(b2);
+		add(b3);
+		add(b4);
+		add(b5);
+		add(b6);
+		add(l5);
+		
+		setTitle("Employee Form....");
+		setBounds(150,150,500,360);
+		setVisible(true);
+		
+		b1.addActionListener(this);
+		b2.addActionListener(this);
+		b3.addActionListener(this);
+		b4.addActionListener(this);
+		b5.addActionListener(this);
+		b6.addActionListener(this);
+		
+	
+	}
+	public void actionPerformed(ActionEvent e)
+	{
+		if(e.getSource()==b1)  //new Button
+		{
+			t1.setText("");
+			t2.setText("");
+			t3.setText("");
+			t4.setText("");
+			l5.setText("");
+			
+		}
+		
+		else if(e.getSource()==b2)   //save Button
+		{
+			if(t1.getText().trim().length()==0)
+			{
+				l5.setText("Please enter employee number....");
+				
+			}
+			else if(t2.getText().trim().length()==0)
+			{
+				l5.setText("Please enter employee name....");
+			}
+			else if(t3.getText().trim().length()==0)
+			{
+				l5.setText("Please enter employee age....");
+			}
+			else if(t4.getText().trim().length()==0)
+			{
+				l5.setText("Please enter employee salary....");
+			}
+			else
+			{
+				saveData();
+			}
+		}
+		
+		else if(e.getSource()==b3) 	// search Button
+		{
+			if(t1.getText().trim().length()==0)
+			{
+				l5.setText("Please enter employee number");
+			}
+			else
+			{
+				searchData();
+			}
+		}
+		
+		else if(e.getSource()==b4)   //Update Button
+		{
+			if(t1.getText().trim().length()==0)
+			{
+				l5.setText("Please enter employee number....");
+				
+			}
+			else if(t2.getText().trim().length()==0)
+			{
+				l5.setText("Please enter employee name....");
+			}
+			else if(t3.getText().trim().length()==0)
+			{
+				l5.setText("Please enter employee age....");
+			}
+			else if(t4.getText().trim().length()==0)
+			{
+				l5.setText("Please enter employee salary....");
+			}
+			else
+			{
+				updateData();
+			}
+		}
+		
+		else if(e.getSource()==b5)   	//Delete Button
+		{
+			if(t1.getText().trim().length()==0)
+			{
+				l5.setText("Please enter employee number....");
+			}
+			else
+			{
+				deleteData();
+			}
+		}
+		
+		else if(e.getSource()==b6)		//Exit Button
+		{
+			dispose();
+		}
+		
+	
+	}
+	
+	private void saveData()
+	{
+		int empno=Integer.parseInt(t1.getText());
+		String name=t2.getText();
+		int age=Integer.parseInt(t3.getText());
+		double salary=Double.parseDouble(t4.getText());
+		try
+		{
+			DriverManager.registerDriver(new oracle.jdbc.OracleDriver());
+			Connection con=DriverManager.getConnection("jdbc:oracle:thin:@127.0.0.1:1521:XE","chandu","7799");
+			PreparedStatement st=con.prepareStatement("insert into emoployee values(?,?,?,?)");
+			st.setInt(1, empno);
+			st.setString(2, name);
+			st.setInt(3,age);
+			st.setDouble(4, salary);
+			int count = st.executeUpdate();
+			if(count>0)
+			{
+				l5.setText("Details are saved");
+			}
+			else
+			{
+				l5.setText("Details not saved");
+			}
+			con.commit();
+			st.close();
+			con.close();
+			
+		}
+		catch(SQLException e)
+		{
+			l5.setText(e.getMessage());
+		}
+	}
+	
+	private void searchData()
+	{
+		int empno=Integer.parseInt(t1.getText());
+		
+		try
+		{
+			DriverManager.registerDriver(new oracle.jdbc.OracleDriver());
+			Connection con=DriverManager.getConnection("jdbc:oracle:thin:@127.0.0.1:1521:XE","chandu","7799");
+			PreparedStatement st=con.prepareStatement("select name, age, salary from employee where empno=?");
+			st.setInt(1, empno);
+			
+			ResultSet rs=st.executeQuery();
+			if(rs.next())
+			{
+				String name=rs.getString(1);
+				int age=rs.getInt(2);
+				double salary=rs.getDouble(3);
+				t2.setText(name);
+				t3.setText(String.valueOf(age));
+				t4.setText(String.valueOf(salary));
+			}
+			else
+			{
+				l5.setText("Employee details not found");
+				t2.setText("");
+				t3.setText("");
+				t4.setText("");
+			}
+			con.commit();
+			st.close();
+			con.close();
+			
+		}
+		catch(SQLException e)
+		{
+			l5.setText(e.getMessage());
+		}
+	}
+	
+	private void updateData()
+	{
+		int empno=Integer.parseInt(t1.getText());
+		String name=t2.getText();
+		int age=Integer.parseInt(t3.getText());
+		double salary=Double.parseDouble(t4.getText());
+		try
+		{
+			DriverManager.registerDriver(new oracle.jdbc.OracleDriver());
+			Connection con=DriverManager.getConnection("jdbc:oracle:thin:@127.0.0.1:1521:XE","chandu","7799");
+			PreparedStatement st=con.prepareStatement("update employee set name=?,age=?,salary=? where empno=?");
+			st.setInt(1, empno);
+			st.setString(2, name);
+			st.setInt(3,age);
+			st.setDouble(4, salary);
+			int count = st.executeUpdate();
+			if(count>0)
+			{
+				l5.setText("Details are Updated");
+			}
+			else
+			{
+				l5.setText("Details not Updated");
+			}
+			con.commit();
+			st.close();
+			con.close();
+			
+		}
+		catch(SQLException e)
+		{
+			l5.setText(e.getMessage());
+		}
+	}
+	
+	private void deleteData()
+	{
+		int empno=Integer.parseInt(t1.getText());
+	
+		try
+		{
+			DriverManager.registerDriver(new oracle.jdbc.OracleDriver());
+			Connection con=DriverManager.getConnection("jdbc:oracle:thin:@127.0.0.1:1521:XE","chandu","7799");
+			PreparedStatement st=con.prepareStatement("delete from employee where empno=?");
+			st.setInt(1, empno);
+			
+			int count = st.executeUpdate();
+			if(count>0)
+			{
+				l5.setText("Details are deleted");
+				t1.setText("");
+				t2.setText("");
+				t3.setText("");
+				t4.setText("");
+			}
+			else
+			{
+				l5.setText("Details not deleted");
+			}
+			con.commit();
+			st.close();
+			con.close();
+			
+		}
+		catch(SQLException e)
+		{
+			l5.setText(e.getMessage());
+		}
+	}
+}
+
+
